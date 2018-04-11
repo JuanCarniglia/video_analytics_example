@@ -13,6 +13,7 @@ import pytz
 from matplotlib import pyplot as plt
 from scipy.spatial import distance
 import uuid
+import ml_helper as mlh
 
 # Function to get Distance between two points (Euclidean Distance)
 def dist(x,y):
@@ -34,6 +35,13 @@ def sendPeople(description):
     }
     sendStatus(dataToSend)
 
+def sendCrashStatus(description):
+    dataToSend = {
+        "Description": description,
+        "Source": "crash_detected"
+    }
+    sendStatus(dataToSend)
+
 # Function to actually do the HTTP Post
 def sendStatus(data):
 
@@ -50,7 +58,7 @@ def sendStatus(data):
 
     # extracting response text
     pastebin_url = r.text
-    print("The pastebin URL is:%s"%pastebin_url)
+    print(mlh.bcolors.OKGREEN + "Sent:%s"%pastebin_url + mlh.bcolors.ENDC)
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -102,6 +110,10 @@ selectedPoint = 1
 # define danger / safe areas ... will use later on
 danger_area_pts1 = np.array([[89,2],[198,3],[177,246],[79,247]], np.int32)
 danger_area_pts2 = np.array([[381,1],[497,1],[436,248],[336,248]], np.int32)
+
+danger_area_pts3 = (381,1,497,248)
+status_crash = False
+
 exit_area_pts = np.array([[203,1],[380,1],[336,248],[183,248]], np.int32)
 
 # define where we do the person detection
@@ -120,6 +132,7 @@ door_status_sent = False
 # this is part of the hack for not sending multiple HTTP Posts for the same
 # person
 personSentAt = time.time()
+crashSentAt = time.time()
 
 while(True):
     ret, frame = camera.read()
@@ -146,6 +159,26 @@ while(True):
         door_status_sent = False
 
     # end Door Open Detection
+
+    # begin Crash Detection
+    door_handle_gray = image[danger_area_pts3[1]:danger_area_pts3[3], danger_area_pts3[0]:danger_area_pts3[2]]
+    avg = door_handle_gray.mean()
+    cv2.imshow("area", door_handle_gray)
+    if avg < 100 and avg > 20:
+        #print(mlh.bcolors.OKYELLOW + "Avg: " + str(avg) + mlh.bcolors.ENDC)
+        status_crash = True
+        if not status_crash_sent:
+            if (time.time() - crashSentAt) > 4:
+                print(mlh.bcolors.FAIL + "Crash Detected" + mlh.bcolors.ENDC)
+                crashSentAt = time.time()
+                sendCrashStatus("Detected crash on right side. Send Paramedics right away")
+
+            status_crash_sent = True
+    else:
+        status_crash = False
+        status_crash_sent = False
+
+    # end Crash Detection
 
 
     # begin People Detection
@@ -178,7 +211,7 @@ while(True):
                 cv2.rectangle(image, (xA, yA), (xB, yB), (0, 0, 255), 2)
                 lastFound = np.array((xA, yA,0))
                 numPeople += 1
-                print("Person Detected ({})".format(numPeople))
+                print(mlh.bcolors.OKGREEN + "Person Detected ({})".format(numPeople) + mlh.bcolors.ENDC)
 
                 personSentAt = time.time()
                 sendPeople("Person detected on video")
