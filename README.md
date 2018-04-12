@@ -5,6 +5,7 @@ This is a script (Python) file that reads frames from a Video, and anlyzes a few
 * Detect People
 * Marks Safe / Danger zones
 * Detects a sliding door opening
+* Detect a person crashing againts the window
 
 Everytime an event (Person / Door) is generated, it sends this information via HTTP POST to an API Layer.
 

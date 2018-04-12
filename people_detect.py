@@ -152,6 +152,8 @@ while(True):
     if avg < 100:
         status_door = True
         if not door_status_sent:
+            print("\n")
+            print(mlh.bcolors.WARNING + "Door Open" + mlh.bcolors.ENDC)
             sendDoorStatus()
             door_status_sent = True
     else:
@@ -169,6 +171,7 @@ while(True):
         status_crash = True
         if not status_crash_sent:
             if (time.time() - crashSentAt) > 4:
+                print("\n")
                 print(mlh.bcolors.FAIL + "Crash Detected" + mlh.bcolors.ENDC)
                 crashSentAt = time.time()
                 sendCrashStatus("Detected crash on right side. Send Paramedics right away")
@@ -211,7 +214,8 @@ while(True):
                 cv2.rectangle(image, (xA, yA), (xB, yB), (0, 0, 255), 2)
                 lastFound = np.array((xA, yA,0))
                 numPeople += 1
-                print(mlh.bcolors.OKGREEN + "Person Detected ({})".format(numPeople) + mlh.bcolors.ENDC)
+                print("\n")
+                print(mlh.bcolors.WARNING + "Person Detected ({})".format(numPeople) + mlh.bcolors.ENDC)
 
                 personSentAt = time.time()
                 sendPeople("Person detected on video")
