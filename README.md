@@ -18,5 +18,7 @@ It is a simple example of a few things:
 * Detect an object using mean (Color mean)
 * Person detection using Hog (DetectMultiScale) on a region, not the entire image
 * PointPolygonTest
+* Crashing detection (and inform)
+* Colors on console output ! Yeah.
 
 Enjoy.
